@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
+import example_avatar_fantasy from './assets/example_avatar_fantasy.png'
+import example_avatar_anime from './assets/example_avatar_anime.png'
+import example_avatar_realistic from './assets/example_avatar_realistic.png'
 
 function FullFeaturedApp() {
   // Основные состояния
@@ -72,7 +75,14 @@ function FullFeaturedApp() {
       exportToGames: 'Экспорт в игры',
       
       title: 'Avatar Plus',
-      subtitle: 'Создавайте уникальные аватарки с помощью ИИ'
+      subtitle: 'Создавайте уникальные аватарки с помощью ИИ',
+      exampleAvatars: 'Примеры аватарок',
+      fantasyStyle: 'Фэнтези стиль',
+      fantasyDescription: 'Эльфийская лучница в магическом лесу',
+      animeStyle: 'Аниме стиль',
+      animeDescription: 'Футуристический воин в неоновом городе',
+      realisticStyle: 'Реалистичный стиль',
+      realisticDescription: 'Профессионал в современном офисе'
     },
     en: {
       home: 'Home',
@@ -440,6 +450,30 @@ function FullFeaturedApp() {
 
       <AdBanner type="features" size="large" />
 
+      {/* Примеры аватарок */}
+      <div style={{ textAlign: 'center', marginTop: '4rem', marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '2rem' }}>
+          {t.exampleAvatars}
+        </h2>
+        <div style={styles.grid}>
+          <div style={styles.card}>
+            <img src={example_avatar_fantasy} alt="Fantasy Avatar" style={{ width: '100%', borderRadius: '10px', marginBottom: '1rem' }} />
+            <h3>{t.fantasyStyle}</h3>
+            <p>{t.fantasyDescription}</p>
+          </div>
+          <div style={styles.card}>
+            <img src={example_avatar_anime} alt="Anime Avatar" style={{ width: '100%', borderRadius: '10px', marginBottom: '1rem' }} />
+            <h3>{t.animeStyle}</h3>
+            <p>{t.animeDescription}</p>
+          </div>
+          <div style={styles.card}>
+            <img src={example_avatar_realistic} alt="Realistic Avatar" style={{ width: '100%', borderRadius: '10px', marginBottom: '1rem' }} />
+            <h3>{t.realisticStyle}</h3>
+            <p>{t.realisticDescription}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Дополнительные возможности */}
       <div style={styles.grid}>
         <div style={styles.card}>
@@ -478,7 +512,13 @@ function FullFeaturedApp() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [generationCount, setGenerationCount] = useState(1)
     const [useTemplate, setUseTemplate] = useState(false)
-    const [selectedTemplate, setSelectedTemplate] = useState('')
+    const [selectedTemplate, setSelectedTemplate] = useState("")
+    const [textInput, setTextInput] = useState("")
+    const [textSize, setTextSize] = useState(24)
+    const [textColor, setTextColor] = useState("#ffffff")
+    const [textFont, setTextFont] = useState("Arial")
+    const [textPosition, setTextPosition] = useState("bottom") // top, center, bottom
+    const [textRotation, setTextRotation] = useState(0) // in degrees
 
     const styles_list = [
       'fantasy', 'anime', 'realistic', 'cyberpunk', 'steampunk', 
@@ -510,7 +550,13 @@ function FullFeaturedApp() {
           image: `/api/placeholder/300/300?${Date.now() + i}`,
           createdAt: new Date().toISOString(),
           likes: 0,
-          views: 0
+          views: 0,
+          text: textInput,
+          textSize: textSize,
+          textColor: textColor,
+          textFont: textFont,
+          textPosition: textPosition,
+          textRotation: textRotation
         }))
         
         setUserAvatars(prev => [...prev, ...newAvatars])
@@ -608,6 +654,68 @@ function FullFeaturedApp() {
               <option value="fantasy">Фэнтези герой</option>
             </select>
           )}
+
+          {/* Настройки текста */}
+          <div style={{ marginTop: '2rem', marginBottom: '1rem', borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingTop: '1rem' }}>
+            <h3 style={{ marginBottom: '1rem' }}>Настройки текста</h3>
+            <input
+              style={styles.input}
+              type="text"
+              placeholder="Текст на аватарке (необязательно)"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <input
+                style={styles.input}
+                type="number"
+                min="10"
+                max="100"
+                value={textSize}
+                onChange={(e) => setTextSize(parseInt(e.target.value))}
+                placeholder="Размер текста"
+              />
+              <input
+                style={styles.input}
+                type="color"
+                value={textColor}
+                onChange={(e) => setTextColor(e.target.value)}
+                title="Цвет текста"
+              />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <select
+                style={styles.input}
+                value={textFont}
+                onChange={(e) => setTextFont(e.target.value)}
+              >
+                <option value="Arial">Arial</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Impact">Impact</option>
+                <option value="Courier New">Courier New</option>
+              </select>
+              <select
+                style={styles.input}
+                value={textPosition}
+                onChange={(e) => setTextPosition(e.target.value)}
+              >
+                <option value="top">Сверху</option>
+                <option value="center">По центру</option>
+                <option value="bottom">Снизу</option>
+              </select>
+            </div>
+            <input
+              style={styles.input}
+              type="range"
+              min="-45"
+              max="45"
+              value={textRotation}
+              onChange={(e) => setTextRotation(parseInt(e.target.value))}
+              title="Поворот текста"
+            />
+            <p style={{textAlign: 'center', fontSize: '0.8rem', opacity: 0.7}}>Поворот текста: {textRotation}°</p>
+          </div>
           
           <button
             style={{
@@ -695,17 +803,36 @@ function FullFeaturedApp() {
               ...styles.card,
               padding: '1.5rem'
             }}>
-              <img
-                src={avatar.image}
-                alt="Avatar"
-                style={{ 
-                  width: '100%', 
-                  height: viewMode === 'grid' ? '200px' : '100px',
-                  objectFit: 'cover',
-                  borderRadius: '10px', 
-                  marginBottom: '1rem' 
-                }}
-              />
+              <div style={{ position: 'relative', width: '100%', height: viewMode === 'grid' ? '200px' : '100px', marginBottom: '1rem' }}>
+                <img
+                  src={avatar.image}
+                  alt="Avatar"
+                  style={{ 
+                    width: '100%', 
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '10px'
+                  }}
+                />
+                {avatar.text && (
+                  <div style={{
+                    position: 'absolute',
+                    top: avatar.textPosition === 'top' ? '10px' : avatar.textPosition === 'center' ? '50%' : 'auto',
+                    bottom: avatar.textPosition === 'bottom' ? '10px' : 'auto',
+                    left: '50%',
+                    transform: `translate(-50%, ${avatar.textPosition === 'center' ? '-50%' : '0'}) rotate(${avatar.textRotation}deg)`,
+                    color: avatar.textColor,
+                    fontSize: `${avatar.textSize / (viewMode === 'grid' ? 1 : 2)}px`,
+                    fontFamily: avatar.textFont,
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    width: '90%',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
+                  }}>
+                    {avatar.text}
+                  </div>
+                )}
+              </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <span style={styles.achievementBadge}>{avatar.type}</span>
