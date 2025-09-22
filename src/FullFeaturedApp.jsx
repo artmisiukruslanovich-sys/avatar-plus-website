@@ -533,7 +533,7 @@ function FullFeaturedApp() {
       { id: 'nft', name: 'NFT готовая', cost: 10 }
     ]
 
-    const handleGenerate = () => {
+    const handleGenerate = async () => {
       const cost = avatar_types.find(t => t.id === avatarType)?.cost * generationCount
       if (userCredits < cost && !isPremium) {
         alert(`Недостаточно кредитов. Нужно: ${cost}, у вас: ${userCredits}`)
@@ -541,31 +541,74 @@ function FullFeaturedApp() {
       }
 
       setIsGenerating(true)
-      setTimeout(() => {
-        const newAvatars = Array.from({ length: generationCount }, (_, i) => ({
-          id: Date.now() + i,
-          prompt,
-          style: selectedStyle,
-          type: avatarType,
-          image: `/api/placeholder/300/300?${Date.now() + i}`,
-          createdAt: new Date().toISOString(),
-          likes: 0,
-          views: 0,
-          text: textInput,
-          textSize: textSize,
-          textColor: textColor,
-          textFont: textFont,
-          textPosition: textPosition,
-          textRotation: textRotation
-        }))
+      
+      try {
+        const newAvatars = []
         
-        setUserAvatars(prev => [...prev, ...newAvatars])
-        if (!isPremium) {
-          setUserCredits(prev => prev - cost)
+        for (let i = 0; i < generationCount; i++) {
+          const response = await fetch('http://localhost:5000/api/generate-avatar', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              description: prompt,
+              style: selectedStyle,
+              text: textInput,
+              textSettings: {
+                fontSize: textSize,
+                color: textColor,
+                fontFamily: textFont,
+                position: textPosition,
+                rotation: textRotation
+              }
+            })
+          })
+          
+          if (response.ok) {
+            const result = await response.json()
+            
+            const newAvatar = {
+              id: result.avatar_id,
+              prompt,
+              style: selectedStyle,
+              type: avatarType,
+              image: `http://localhost:5000${result.preview_url}`,
+              downloadUrl: `http://localhost:5000${result.download_url}`,
+              createdAt: new Date().toISOString(),
+              likes: 0,
+              views: 0,
+              text: textInput,
+              textSize: textSize,
+              textColor: textColor,
+              textFont: textFont,
+              textPosition: textPosition,
+              textRotation: textRotation,
+              isPlaceholder: result.is_placeholder || false
+            }
+            
+            newAvatars.push(newAvatar)
+          } else {
+            const error = await response.json()
+            console.error('Ошибка генерации:', error)
+            alert(`Ошибка генерации аватарки ${i + 1}: ${error.error}`)
+          }
         }
+        
+        if (newAvatars.length > 0) {
+          setUserAvatars(prev => [...prev, ...newAvatars])
+          if (!isPremium) {
+            setUserCredits(prev => prev - (cost * newAvatars.length / generationCount))
+          }
+          alert(`Создано ${newAvatars.length} аватарок!`)
+        }
+        
+      } catch (error) {
+        console.error('Ошибка подключения к серверу:', error)
+        alert('Ошибка подключения к серверу. Проверьте, что бэкенд запущен.')
+      } finally {
         setIsGenerating(false)
-        alert(`Создано ${generationCount} аватарок!`)
-      }, 3000)
+      }
     }
 
     return (
